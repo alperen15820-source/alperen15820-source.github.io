@@ -6,7 +6,7 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Screen(title: "Kanallar") {
+            Screen(title: "Kanallar", large: true) {
                 if let msg = model.errorMessage { ErrorBanner(message: msg) }
                 if let msg = model.state?.error { ErrorBanner(message: msg) }
                 if let updated = model.state?.updatedDate, Date().timeIntervalSince(updated) > 3600 {

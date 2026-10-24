@@ -34,20 +34,34 @@ struct RootView: View {
     }
 }
 
-/// Ekranlar arasında ortak arka plan ve gezinme çubuğu görünümü.
+/// Ekranlar arasında ortak arka plan ve başlık. Sekme kök ekranlarında (large)
+/// sistem gezinme çubuğu yerine kalın, büyük harfli kendi başlığımızı kullanırız.
 struct Screen<Content: View>: View {
     let title: String
+    var large = false
     @ViewBuilder var content: Content
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) { content }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 24)
+            VStack(alignment: .leading, spacing: 12) {
+                if large {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(title.uppercased(with: Locale(identifier: "tr_TR")))
+                            .font(.system(size: 30, weight: .black)).tracking(0.5)
+                            .foregroundStyle(Theme.text)
+                        Rectangle().fill(Theme.accent).frame(width: 32, height: 3)
+                    }
+                    .padding(.top, 8).padding(.bottom, 6)
+                }
+                content
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
         }
         .scrollIndicators(.hidden)
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle(title)
+        .toolbar(large ? .hidden : .visible, for: .navigationBar)
         .toolbarBackground(Theme.bg, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
     }

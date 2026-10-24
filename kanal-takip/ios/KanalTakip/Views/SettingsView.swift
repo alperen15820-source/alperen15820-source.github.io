@@ -11,7 +11,7 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Screen(title: "Ayarlar") {
+            Screen(title: "Ayarlar", large: true) {
                 if let message {
                     Text(message.0).font(.footnote.weight(.semibold))
                         .foregroundStyle(message.1 ? Theme.up : Theme.down)

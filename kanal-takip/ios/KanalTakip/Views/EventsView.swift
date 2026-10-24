@@ -5,7 +5,7 @@ struct EventsView: View {
 
     var body: some View {
         NavigationStack {
-            Screen(title: "Olaylar") {
+            Screen(title: "Olaylar", large: true) {
                 let events = model.state?.events ?? []
                 if events.isEmpty {
                     Text("Henüz olay yok. Sıçramalar, yeni videolar ve abone hedefleri burada listelenir.")
