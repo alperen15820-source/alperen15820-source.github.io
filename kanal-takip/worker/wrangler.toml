@@ -1,0 +1,15 @@
+name = "kanal-takip"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Her 10 dakikada bir kanalları kontrol et
+[triggers]
+crons = ["*/10 * * * *"]
+
+# "npm run kurulum" bu id'yi otomatik doldurur
+[[kv_namespaces]]
+binding = "KV"
+id = "KV_ID_BURAYA"
+
+[observability]
+enabled = true
