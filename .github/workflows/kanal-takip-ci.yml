@@ -24,6 +24,8 @@ jobs:
 
   ios:
     runs-on: macos-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: kanal-takip/ios
@@ -62,8 +64,11 @@ jobs:
           shot 6-kutlama -demo -celebrate
           ls -la shots
 
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ekran-goruntuleri
-          path: kanal-takip/ios/shots
+      - name: Ekran görüntülerini kaydet
+        run: |
+          rm -rf screenshots && mkdir screenshots
+          for f in shots/*.png; do sips -Z 900 "$f" --out "screenshots/$(basename "$f")" >/dev/null; done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add screenshots
+          git diff --cached --quiet || { git commit -qm "Kanal Takip: simülatör ekran görüntüleri [skip ci]"; git push -q origin HEAD:${{ github.ref_name }}; }
