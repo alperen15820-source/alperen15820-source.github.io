@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Siyah-beyaz palet. Artış/azalış renkle değil, işaret (+/−) ve tonla ayrılır.
+/// Siyah-beyaz palet; tek renk istisnası artış (yeşil) ve azalış (kırmızı).
 enum Theme {
     static let bg = Color(hex: 0x000000)
     static let surface = Color(hex: 0x0B0B0B)
@@ -9,8 +9,8 @@ enum Theme {
     static let text = Color.white
     static let muted = Color(hex: 0x8A8A8A)
     static let accent = Color.white
-    static let up = Color.white
-    static let down = Color(hex: 0x8A8A8A)
+    static let up = Color(hex: 0x00D26A)
+    static let down = Color(hex: 0xFF453A)
     static let gold = Color.white
     static let toggle = Color(hex: 0x5E5E5E)
 
