@@ -34,12 +34,18 @@ struct HomeView: View {
             .navigationDestination(for: String.self) { id in
                 if let c = model.state?.channels[id] { ChannelDetailView(channel: c) }
             }
-            .onChange(of: model.openChannelId) { _, id in
-                guard let id, model.state?.channels[id] != nil else { return }
-                path = [id]
-                model.openChannelId = nil
-            }
+            .onChange(of: model.openChannelId) { _, _ in openPendingChannel() }
+            .onAppear { openPendingChannel() }
         }
+    }
+}
+
+extension HomeView {
+    /// Bildirime dokunulduğunda ilgili kanalın detayını aç.
+    private func openPendingChannel() {
+        guard let id = model.openChannelId, model.state?.channels[id] != nil else { return }
+        path = [id]
+        model.openChannelId = nil
     }
 }
 

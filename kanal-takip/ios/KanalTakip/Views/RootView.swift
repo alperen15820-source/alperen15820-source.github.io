@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
-    @State private var tab = 0
+    @State private var tab = Int(DemoData.argument("-tab") ?? "") ?? 0
 
     var body: some View {
         @Bindable var model = model

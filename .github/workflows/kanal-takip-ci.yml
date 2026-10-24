@@ -24,14 +24,46 @@ jobs:
 
   ios:
     runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: kanal-takip/ios
     steps:
       - uses: actions/checkout@v4
       - run: xcodebuild -version
-      - name: Derle (simülatör, imzasız)
-        working-directory: kanal-takip/ios
+
+      - name: Simülatör seç
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone') and 'Pro' in x['name'] and 'Max' not in x['name']))")
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl list devices | grep "$UDID"
+
+      - name: Derle (imzasız)
         run: |
           set -o pipefail
-          xcodebuild -project KanalTakip.xcodeproj -scheme KanalTakip \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD" || true
+          xcodebuild -project KanalTakip.xcodeproj -scheme KanalTakip -destination "id=$UDID" \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD" || true
           grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Ekran görüntüleri
+        run: |
+          APP=build/Build/Products/Debug-iphonesimulator/KanalTakip.app
+          BID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP/Info.plist")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p shots
+          shot() { name=$1; shift; xcrun simctl terminate "$UDID" "$BID" 2>/dev/null || true; xcrun simctl launch "$UDID" "$BID" "$@"; sleep 6; xcrun simctl io "$UDID" screenshot "shots/$name.png"; }
+          shot 1-kurulum
+          shot 2-kanallar -demo
+          shot 3-detay -demo -open otomasyon
+          shot 4-olaylar -demo -tab 1
+          shot 5-ayarlar -demo -tab 2
+          shot 6-kutlama -demo -celebrate
+          ls -la shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ekran-goruntuleri
+          path: kanal-takip/ios/shots

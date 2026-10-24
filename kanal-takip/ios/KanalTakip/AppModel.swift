@@ -20,6 +20,15 @@ final class AppModel {
     private let seenKey = "celebratedUntil"
 
     init() {
+        if DemoData.isEnabled {
+            server = ServerConfig(url: URL(string: "https://demo.invalid")!, secret: "demo")
+            state = DemoData.state()
+            if ProcessInfo.processInfo.arguments.contains("-celebrate") {
+                celebration = state?.events?.first { $0.type == "milestone" }
+            }
+            openChannelId = DemoData.argument("-open")
+            return
+        }
         if let data = try? Data(contentsOf: cacheFile) {
             state = try? JSONDecoder().decode(AppState.self, from: data)
         }
@@ -60,7 +69,7 @@ final class AppModel {
     // MARK: Veri
 
     func refresh(force: Bool = false) async {
-        guard let server, !loading else { return }
+        guard let server, !loading, !DemoData.isEnabled else { return }
         if !force && Date().timeIntervalSince(lastLoad) < 20 { return }
         loading = true
         defer { loading = false }
