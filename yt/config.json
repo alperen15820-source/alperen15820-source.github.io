@@ -1,0 +1,15 @@
+{
+  "channels": [],
+  "milestones": [100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+  "alerts": {
+    "spikeMultiplier": 3,
+    "videoMinViewsPerHour": 50,
+    "channelMinViewsPerHour": 100,
+    "subsPerHour": 10,
+    "newVideo": true,
+    "cooldownHours": 3
+  },
+  "dailyReportHour": 21,
+  "timezone": "Europe/Istanbul",
+  "trackLatestVideos": 15
+}

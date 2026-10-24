@@ -1,0 +1,67 @@
+name: YouTube Takip
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      test_notification:
+        description: 'Telefona test bildirimi gönder'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yt-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Veriler ana dalı kirletmemek için ayrı "yt-data" dalında tutulur.
+      - name: Veri dalını hazırla
+        run: |
+          if git ls-remote --exit-code --heads origin yt-data >/dev/null; then
+            git fetch --depth=1 origin yt-data
+            git worktree add --detach data FETCH_HEAD
+          else
+            git worktree add --detach data HEAD
+            git -C data rm -rfq .
+          fi
+
+      - name: Kanalları kontrol et
+        run: node scripts/yt-monitor.mjs
+        env:
+          DATA_DIR: data
+          CONFIG: yt/config.json
+          YT_API_KEY: ${{ secrets.YT_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: https://${{ github.repository_owner }}.github.io/yt/
+          TEST_NOTIFICATION: ${{ inputs.test_notification || 'false' }}
+
+      # Dal her seferinde tek commit'e sıfırlanır, böylece depo şişmez.
+      - name: Veriyi kaydet
+        if: always()
+        working-directory: data
+        run: |
+          [ -f state.json ] || exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -q --orphan snapshot
+          git add -A
+          git commit -qm "veri: $(date -u +%FT%TZ)"
+          git push -qf origin snapshot:yt-data
