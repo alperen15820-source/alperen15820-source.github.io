@@ -66,7 +66,7 @@ struct SettingsView: View {
                     .onSubmit { addChannel(cfg) }
                 Button { addChannel(cfg) } label: {
                     Image(systemName: "plus").font(.system(size: 15, weight: .heavy))
-                        .frame(width: 42, height: 42).foregroundStyle(.white).background(Theme.accent)
+                        .frame(width: 42, height: 42).foregroundStyle(Theme.bg).background(Theme.accent)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
                 .disabled(newChannel.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -104,7 +104,7 @@ struct SettingsView: View {
             Toggle(isOn: cfg.alerts.newVideo) {
                 Text("Yeni video bildirimi").font(.subheadline).foregroundStyle(Theme.text)
             }
-            .tint(Theme.accent)
+            .tint(Theme.toggle)
             Text("Hedefler: " + cfg.wrappedValue.milestones.map { Fmt.compact($0) }.joined(separator: " · "))
                 .font(.caption).foregroundStyle(Theme.muted)
             HStack(spacing: 8) {
@@ -141,7 +141,7 @@ struct SettingsView: View {
                     Text("Otomasyon o gün çalışmazsa sunucu gönderir").font(.caption).foregroundStyle(Theme.muted)
                 }
             }
-            .tint(Theme.accent)
+            .tint(Theme.toggle)
             if let hour = cfg.wrappedValue.morningFallbackHour {
                 Stepper(value: Binding(get: { hour }, set: { cfg.wrappedValue.morningFallbackHour = $0 }), in: 5...14) {
                     Text("En geç \(String(format: "%02d:00", hour))").font(.subheadline.monospacedDigit()).foregroundStyle(Theme.text)

@@ -81,7 +81,7 @@ struct PrimaryButton: View {
             Text(title.uppercased())
                 .font(.system(size: 13, weight: .heavy)).tracking(1.2)
                 .frame(maxWidth: .infinity).padding(.vertical, 14)
-                .foregroundStyle(.white)
+                .foregroundStyle(disabled ? Theme.muted : Theme.bg)
                 .background(disabled ? Theme.surface2 : style)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
         }

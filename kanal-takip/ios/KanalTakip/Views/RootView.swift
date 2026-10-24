@@ -72,7 +72,7 @@ struct ErrorBanner: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Rectangle().fill(Theme.down).frame(width: 3)
+            Rectangle().fill(Theme.text).frame(width: 3)
             Text(message).font(.footnote).foregroundStyle(Theme.text)
         }
         .fixedSize(horizontal: false, vertical: true)

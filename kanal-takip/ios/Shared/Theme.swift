@@ -1,17 +1,18 @@
 import SwiftUI
 
-/// Minimal, sert renk paleti: siyah zemin, lacivert yüzeyler, tek vurgu rengi.
+/// Siyah-beyaz palet. Artış/azalış renkle değil, işaret (+/−) ve tonla ayrılır.
 enum Theme {
     static let bg = Color(hex: 0x000000)
-    static let surface = Color(hex: 0x07112B)
-    static let surface2 = Color(hex: 0x0D1B40)
-    static let line = Color(hex: 0x1A2A5C)
+    static let surface = Color(hex: 0x0B0B0B)
+    static let surface2 = Color(hex: 0x1C1C1C)
+    static let line = Color(hex: 0x262626)
     static let text = Color.white
-    static let muted = Color(hex: 0x7F8BB0)
-    static let accent = Color(hex: 0x2E6BFF)
-    static let up = Color(hex: 0x00E676)
-    static let down = Color(hex: 0xFF3B3B)
-    static let gold = Color(hex: 0xFFC400)
+    static let muted = Color(hex: 0x8A8A8A)
+    static let accent = Color.white
+    static let up = Color.white
+    static let down = Color(hex: 0x8A8A8A)
+    static let gold = Color.white
+    static let toggle = Color(hex: 0x5E5E5E)
 
     static let radius: CGFloat = 4
 

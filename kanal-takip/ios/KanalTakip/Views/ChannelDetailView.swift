@@ -280,8 +280,8 @@ private struct VideoRow: View {
                 }
                 .font(.caption.monospacedDigit()).foregroundStyle(Theme.muted)
                 HStack(spacing: 6) {
-                    if spiking { Tag(text: "Sıçrama", color: Theme.down) }
-                    if video.live == "live" { Tag(text: "Canlı", color: Theme.down) }
+                    if spiking { Tag(text: "Sıçrama", color: Theme.text) }
+                    if video.live == "live" { Tag(text: "Canlı", color: Theme.text) }
                     Text(Fmt.ago(video.publishedDate)).font(.caption2).foregroundStyle(Theme.muted)
                 }
             }

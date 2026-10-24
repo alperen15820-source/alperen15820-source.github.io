@@ -1,0 +1,75 @@
+# Geçici derleme kontrolü: iOS projesinin Xcode'da derlendiğini ve sunucu testlerinin geçtiğini doğrular.
+name: Kanal Takip derleme kontrolü
+
+on:
+  push:
+    branches: [claude/awesome-heisenberg-kyy96n]
+    paths: ['kanal-takip/**', '.github/workflows/kanal-takip-ci.yml']
+  workflow_dispatch:
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kanal-takip/worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npx wrangler deploy --dry-run --outdir /tmp/out
+
+  ios:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: kanal-takip/ios
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -version
+
+      - name: Simülatör seç
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone') and 'Pro' in x['name'] and 'Max' not in x['name']))")
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl list devices | grep "$UDID"
+
+      - name: Derle (imzasız)
+        run: |
+          set -o pipefail
+          xcodebuild -project KanalTakip.xcodeproj -scheme KanalTakip -destination "id=$UDID" \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Ekran görüntüleri
+        run: |
+          APP=build/Build/Products/Debug-iphonesimulator/KanalTakip.app
+          BID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP/Info.plist")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p shots
+          shot() { name=$1; shift; xcrun simctl terminate "$UDID" "$BID" 2>/dev/null || true; xcrun simctl launch "$UDID" "$BID" "$@"; sleep 6; xcrun simctl io "$UDID" screenshot "shots/$name.png"; }
+          shot 2-kanallar -demo
+          shot 3-detay -demo -open otomasyon
+          shot 4-olaylar -demo -tab 1
+          shot 5-ayarlar -demo -tab 2
+          shot 6-kutlama -demo -celebrate
+          # Kurulum ekranı en son: bildirim izni penceresi diğer görüntüleri kapatmasın
+          shot 1-kurulum
+          ls -la shots
+
+      - name: Ekran görüntülerini kaydet
+        run: |
+          rm -rf screenshots && mkdir screenshots
+          for f in shots/*.png; do sips -Z 900 "$f" --out "screenshots/$(basename "$f")" >/dev/null; done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add screenshots
+          git diff --cached --quiet || { git commit -qm "Kanal Takip: simülatör ekran görüntüleri [skip ci]"; git push -q origin HEAD:${{ github.ref_name }}; }

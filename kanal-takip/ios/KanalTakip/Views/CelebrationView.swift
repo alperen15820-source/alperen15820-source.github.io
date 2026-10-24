@@ -50,7 +50,7 @@ private struct ConfettiView: View {
     @State private var pieces: [Piece] = (0..<140).map { _ in
         Piece(x: .random(in: 0.3...0.7), vx: .random(in: -0.45...0.45), vy: .random(in: -1.3 ... -0.6),
               size: .random(in: 5...10), spin: .random(in: -8...8),
-              color: [Theme.gold, Theme.accent, Theme.text, Theme.up, Theme.down].randomElement()!)
+              color: [Color.white, Color(white: 0.75), Color(white: 0.45)].randomElement()!)
     }
 
     var body: some View {
