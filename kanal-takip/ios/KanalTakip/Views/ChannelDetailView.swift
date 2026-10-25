@@ -40,7 +40,7 @@ private struct Header: View {
         let d24 = channel.gain(.subs, over: 86400)?.delta ?? 0
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
-                Avatar(url: channel.thumbURL, size: 48)
+                Avatar(url: channel.thumbURL, size: 48, title: channel.title)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(channel.title).font(.headline).foregroundStyle(Theme.text)
                     if let h = channel.handle { Text(h).font(.caption).foregroundStyle(Theme.muted) }
@@ -258,7 +258,12 @@ private struct VideoRow: View {
         let d24 = History.gain(video.hist, index: 1, over: 86400)?.delta
         HStack(alignment: .top, spacing: 12) {
             ZStack(alignment: .bottomTrailing) {
-                AsyncImage(url: video.thumbURL) { $0.resizable().scaledToFill() } placeholder: { Rectangle().fill(Theme.surface2) }
+                AsyncImage(url: video.thumbURL) { $0.resizable().scaledToFill() } placeholder: {
+                    ZStack {
+                        Rectangle().fill(Theme.surface2)
+                        Image(systemName: "play.fill").font(.system(size: 16)).foregroundStyle(Theme.muted)
+                    }
+                }
                     .frame(width: 112, height: 63)
                     .clipped()
                 if let d = Fmt.duration(video.duration) {

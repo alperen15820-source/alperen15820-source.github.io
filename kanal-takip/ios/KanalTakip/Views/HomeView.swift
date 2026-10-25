@@ -102,7 +102,7 @@ private struct ChannelRow: View {
         let d = channel.gain(.subs, over: 86400)?.delta ?? 0
         VStack(spacing: 10) {
             HStack(spacing: 12) {
-                Avatar(url: channel.thumbURL, size: 40)
+                Avatar(url: channel.thumbURL, size: 40, title: channel.title)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(channel.title).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.text).lineLimit(1)
                     Text(L("\(Fmt.compact(channel.views)) izlenme", "\(Fmt.compact(channel.views)) views")).font(.caption).foregroundStyle(Theme.muted)
@@ -143,12 +143,18 @@ struct GoalBar: View {
 struct Avatar: View {
     let url: URL?
     var size: CGFloat = 40
+    var title: String = ""
 
     var body: some View {
         AsyncImage(url: url) { img in
             img.resizable().scaledToFill()
         } placeholder: {
-            Rectangle().fill(Theme.surface2)
+            // Resim yoksa / yüklenirken kanal adının baş harfi
+            ZStack {
+                Rectangle().fill(Theme.surface2)
+                Text(String(title.prefix(1)).uppercased(with: Lang.locale))
+                    .font(.system(size: size * 0.42, weight: .black)).foregroundStyle(Theme.text)
+            }
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))

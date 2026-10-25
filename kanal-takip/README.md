@@ -1,36 +1,27 @@
 # Kanal Takip
 
-5 YouTube kanalını anlık takip eden iPhone uygulaması.
+YouTube kanallarını takip eden, sıçramalarda ve abone hedeflerinde bildirim gönderen iPhone uygulaması. Herkese açık: App Store'dan indiren her kullanıcı kendi kanallarını (en fazla 5) ekler.
 
-- **Bildirimler:** Video sıçraması, izlenme patlaması, abone yağması, yeni video ve abone hedefleri. 1000 aboneye ulaşınca özel kutlama ekranı açılır.
-- **Sabah özeti:** Belli bir saati yok. Alarmını kapattığında gelir.
-- **Kilit ekranı ve ana ekran widget'ı:** Telefonu eline aldığın an son 24 saati görürsün.
-- **Tasarım:** Siyah zemin, lacivert yüzeyler, sert köşeler.
+- Video sıçraması, izlenme patlaması, abone yağması, yeni video ve abone hedefi bildirimleri (1000 aboneye özel kutlama)
+- Sabah özeti: belli bir saati yok, alarm kapanınca gelir (Kısayollar otomasyonu)
+- Kilit ekranı ve ana ekran widget'ı
+- Türkçe + İngilizce, siyah-beyaz tasarım
+- Giriş yok (anonim hesap), uygulama içinden "Verilerimi sil"
 
 ```
 kanal-takip/
-├── worker/   → Cloudflare sunucusu: 10 dk'da bir kontrol eder, push gönderir (ücretsiz)
-└── ios/      → Xcode projesi (SwiftUI + widget)
+├── worker/      → Cloudflare sunucusu (Workers + D1): kanalları yoklar, push gönderir
+├── ios/         → Xcode projesi (SwiftUI + widget + Kısayollar eylemi)
+└── APPSTORE.md  → App Store Connect'e girilecek tüm metinler ve gönderim adımları
 ```
 
-## Kurulum (~20 dakika, hepsi Mac'te)
+Gizlilik ve destek sayfaları repo kökünde: `kanaltakip-privacy.html`, `kanaltakip-support.html`.
 
-### 1. YouTube API anahtarı
+## Kurulum (Mac'te, ~20 dakika)
 
-1. https://console.cloud.google.com adresinde yeni bir proje oluştur.
-2. **APIs & Services → Library** bölümünden **YouTube Data API v3**'ü bul ve **Enable** de.
-3. **Credentials → Create credentials → API key** ile anahtarı oluştur ve kopyala.
+Gerekenler: Xcode 16+, [Node.js](https://nodejs.org) (LTS), ücretsiz bir [Cloudflare](https://dash.cloudflare.com/sign-up) hesabı (yayında ayda 5$'lık Workers Paid önerilir), YouTube API anahtarı ve Apple push anahtarı (`.p8`).
 
-### 2. Apple push anahtarı (.p8)
-
-1. https://developer.apple.com/account/resources/authkeys/list adresinde **+** butonuna bas.
-2. Bir ad ver, **Apple Push Notifications service (APNs)** kutusunu işaretle ve **Continue → Register** de.
-3. `AuthKey_XXXXXXXXXX.p8` dosyasını indir. Dosya sadece bir kez indirilebiliyor, sakla.
-4. **Team ID**'ni not al: https://developer.apple.com/account → Membership details.
-
-### 3. Sunucuyu kur
-
-Gerekenler: [Node.js](https://nodejs.org) (LTS) ve ücretsiz bir [Cloudflare](https://dash.cloudflare.com/sign-up) hesabı.
+### 1. Sunucu
 
 ```bash
 cd kanal-takip/worker
@@ -39,52 +30,30 @@ npm run kurulum
 ```
 
 Betik sırasıyla şunları yapar:
+- Cloudflare girişini açar.
+- Veritabanını ve tabloları oluşturur, sunucuyu yayına alır.
+- YouTube anahtarını ve `.p8` dosyasını, Key ID'yi ve Team ID'yi sorar.
+- Sunucu adresini Xcode projesine kendisi yazar.
 
-- Cloudflare'e giriş için tarayıcıyı açar.
-- Veri deposunu oluşturur ve sunucuyu yayına alır.
-- YouTube anahtarını ve `.p8` dosyasının yolunu sorar. Dosyayı Terminal'e sürükleyip bırakabilirsin.
-- Sonunda telefon için bir **QR kod** gösterir. Terminali kapatma.
+### 2. Uygulama
 
-### 4. Uygulamayı iPhone'a yükle
+1. `kanal-takip/ios/KanalTakip.xcodeproj` dosyasını aç.
+2. **Signing & Capabilities** sekmesinde her iki hedefte (*KanalTakip*, *KanalTakipWidgetExtension*) **Team** olarak kendi hesabını seç.
+3. iPhone'u bağla ve ▶︎ Run de.
+4. Uygulama açılınca **Başla** de, bildirim iznini ver ve kanallarını ekle.
 
-1. `kanal-takip/ios/KanalTakip.xcodeproj` dosyasını Xcode ile aç (Xcode 16 veya üstü).
-2. Sol üstte **KanalTakip** projesini seç. **Signing & Capabilities** sekmesinde iki hedef var: *KanalTakip* ve *KanalTakipWidgetExtension*. İkisinde de **Team** olarak kendi hesabını seç.
-3. iPhone'u kabloyla bağla, üstteki cihaz menüsünden telefonunu seç ve **▶︎ Run** de.
-   - İlk seferde iPhone'da **Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu**'nu açman gerekebilir.
-4. Uygulama açılınca bildirim iznini ver.
-5. iPhone kamerasıyla terminaldeki **QR kodu okut**. Uygulama sunucuya kendiliğinden bağlanır.
+> Bundle ID başkası tarafından alınmışsa: Build Settings → `BUNDLE_ID_PREFIX` değerini değiştir, sonra `npm run kurulum` komutunu tekrar çalıştırıp aynı Bundle ID'yi gir.
 
-> **"Bundle identifier is not available" hatası alırsan:** Proje → **Build Settings** → `BUNDLE_ID_PREFIX` değerini değiştir (ör. `com.adin.kanaltakip`). Sonra `npm run kurulum` komutunu tekrar çalıştır ve aynı Bundle ID'yi gir.
+### 3. App Store
 
-### 5. Kanalları ekle
+[APPSTORE.md](APPSTORE.md) dosyasındaki adımları izle: mağaza metinleri, ekran görüntüleri, gizlilik etiketleri, inceleme notları, arşivleme ve YouTube kota başvurusu.
 
-Uygulamada **Ayarlar → Kanallar** bölümüne `@kanaladin` yaz, **+** butonuna bas ve **Ayarları kaydet** de. Birkaç saniye içinde veriler gelir. Ardından **Test bildirimi** butonuyla push bildiriminin geldiğini kontrol et.
+## Sunucu notları
 
-### 6. Sabah özeti (bir kerelik)
+- **Kanallar paylaşılır.** Bir kanalı 100 kişi takip etse de YouTube'a bir kez sorulur.
+- **Kotaya göre zamanlama:** Yoklama sıklığı günlük kotaya göre otomatik ayarlanır. Ücretsiz kota (10.000/gün) yaklaşık 100 kanalı 10 dakikada bir yoklamaya yeter. Bu sınır `MAX_TOTAL_CHANNELS` ile korunur; kota artışı gelince `wrangler.toml` dosyasında yükselt.
+- **Veri saklama:** YouTube istatistikleri en fazla 30 gün tutulur. 180 gün açılmayan hesaplar silinir.
+- **Loglar:** `npm run loglar`
+- **Test:** `npm test` çalıştırır. Gerçek SQLite, sahte YouTube ve sahte APNs ile 2 kullanıcı (TR/EN) için 36 saatlik bir simülasyon yapar.
 
-1. **Kısayollar** uygulamasında **Otomasyon → + → Alarm → Durdurulduğunda** seç (ya da **Uyku → Uyanış**).
-2. **Hemen Çalıştır**'ı seç.
-3. Eylem olarak **Kanal Takip → Sabah Özeti**'ni ekle.
-
-İstersen **Ayarlar → Yedek özet** seçeneğini aç. Otomasyon o gün çalışmazsa sunucu özeti senin belirlediğin saatte gönderir.
-
-### 7. Widget
-
-Kilit ekranına uzun bas → **Özelleştir** → **Kanal Takip**'i ekle. Ana ekrana da küçük, orta ya da büyük boyutta ekleyebilirsin.
-
-## Ayarlar
-
-Bildirim eşiklerini uygulamadaki **Ayarlar** ekranından değiştirebilirsin. Varsayılanlar:
-
-- **Sıçrama:** Bir videonun son 1 saatteki izlenme hızı, önceki 24 saatin ortalamasının 3 katını geçerse ve saatte en az 50 izlenme alıyorsa.
-- **İzlenme patlaması:** Aynı kural kanalın tamamı için, saatte en az 100 izlenme ile.
-- **Abone yağması:** Saatte 10 veya daha fazla abone.
-- **Tekrar bekleme:** Aynı şey için 3 saat içinde ikinci bildirim gelmez.
-
-## Bilmen gerekenler
-
-- **Maliyet:** Cloudflare'in ücretsiz planı, YouTube API'nin ücretsiz kotası (5 kanal için günde ~2.200 / 10.000 birim) ve mevcut Apple geliştirici hesabın yeterli. Ek ücret yok.
-- **Sıçrama tespiti** için birkaç saatlik veri gerekiyor. İlk sıçrama bildirimi en erken birkaç saat sonra gelir.
-- **Abone sayıları yuvarlanır:** YouTube 1000 üstündeki abone sayılarını yuvarlar (12.345 → 12.300). Hedef bildirimleri bundan etkilenmez.
-- **Eski hedefler kutlanmaz:** Kurulumdan önce geçilmiş hedefler için bildirim gelmez.
-- **Sunucu logları:** `cd kanal-takip/worker && npm run loglar`
+Uygulamayı örnek veriyle açmak için Xcode → Scheme → Run → Arguments bölümüne `-demo` ekle.
