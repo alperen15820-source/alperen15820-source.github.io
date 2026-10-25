@@ -6,11 +6,11 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Screen(title: "Kanallar", large: true) {
+            Screen(title: L("Kanallar", "Channels"), large: true) {
                 if let msg = model.errorMessage { ErrorBanner(message: msg) }
                 if let msg = model.state?.error { ErrorBanner(message: msg) }
                 if let updated = model.state?.updatedDate, Date().timeIntervalSince(updated) > 3600 {
-                    ErrorBanner(message: "Veriler \(Fmt.ago(updated)) güncellendi. Sunucu çalışmıyor olabilir.")
+                    ErrorBanner(message: L("Veriler \(Fmt.ago(updated)) güncellendi. Bağlantını kontrol et.", "Data last updated \(Fmt.ago(updated)). Check your connection."))
                 }
 
                 let channels = model.state?.orderedChannels ?? []
@@ -59,7 +59,7 @@ private struct TotalsPanel: View {
         let views24 = channels.compactMap { $0.gain(.views, over: 86400)?.delta }.reduce(0, +)
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("Toplam abone").label()
+                Text(L("Toplam abone", "Total subscribers")).label()
                 Spacer()
                 Text(Fmt.ago(updated)).font(.caption2).foregroundStyle(Theme.muted)
             }
@@ -69,9 +69,9 @@ private struct TotalsPanel: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
             HStack(spacing: 0) {
-                Stat(title: "Abone · 24s", value: Fmt.signed(subs24), color: Theme.trend(subs24))
+                Stat(title: L("Abone · 24s", "Subs · 24h"), value: Fmt.signed(subs24), color: Theme.trend(subs24))
                 Rectangle().fill(Theme.line).frame(width: 1, height: 34)
-                Stat(title: "İzlenme · 24s", value: Fmt.signed(views24), color: Theme.trend(views24))
+                Stat(title: L("İzlenme · 24s", "Views · 24h"), value: Fmt.signed(views24), color: Theme.trend(views24))
                     .padding(.leading, 16)
             }
         }
@@ -105,7 +105,7 @@ private struct ChannelRow: View {
                 Avatar(url: channel.thumbURL, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(channel.title).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.text).lineLimit(1)
-                    Text("\(Fmt.compact(channel.views)) izlenme").font(.caption).foregroundStyle(Theme.muted)
+                    Text(L("\(Fmt.compact(channel.views)) izlenme", "\(Fmt.compact(channel.views)) views")).font(.caption).foregroundStyle(Theme.muted)
                 }
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 2) {
@@ -158,8 +158,8 @@ struct Avatar: View {
 private struct EmptyChannels: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Kanal yok").font(.headline).foregroundStyle(Theme.text)
-            Text("Ayarlar → Kanallar bölümünden takip etmek istediğin kanalları ekle (ör. @kanaladin). İlk veriler birkaç saniye içinde gelir.")
+            Text(L("Henüz kanal yok", "No channels yet")).font(.headline).foregroundStyle(Theme.text)
+            Text(L("Ayarlar → Kanallar bölümünden takip etmek istediğin kanalları ekle (ör. @kanaladi). İlk veriler birkaç saniye içinde gelir.", "Add channels in Settings → Channels (e.g. @handle). First data arrives within seconds."))
                 .font(.subheadline).foregroundStyle(Theme.muted)
         }
         .panel()

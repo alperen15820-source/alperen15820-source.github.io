@@ -5,15 +5,15 @@ import WidgetKit
 /// Kısayollar otomasyonundan (alarm durdurulunca / uyanınca) çalışır ve
 /// kanalların son 24 saatini bildirim olarak gösterir.
 struct MorningSummaryIntent: AppIntent {
-    static var title: LocalizedStringResource = "Sabah Özeti"
-    static var description = IntentDescription("YouTube kanallarının son 24 saatini bildirim olarak gösterir.")
+    static var title: LocalizedStringResource = "Morning Summary"
+    static var description = IntentDescription("Shows the last 24 hours of your YouTube channels as a notification.")
     static var openAppWhenRun = false
 
-    @Parameter(title: "Günde yalnızca bir kez", default: true)
+    @Parameter(title: "Only once per day", default: true)
     var oncePerDay: Bool
 
     func perform() async throws -> some IntentResult {
-        guard let api = APIClient() else { throw APIError.server("Önce Kanal Takip uygulamasında sunucuyu bağla.") }
+        guard let api = APIClient() else { throw APIError.server(L("Önce Kanal Takip uygulamasını açıp kanal ekle.", "Open Kanal Takip and add a channel first.")) }
 
         let today = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
         let key = "morningShownDay"
@@ -44,10 +44,11 @@ struct KanalTakipShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: MorningSummaryIntent(),
             phrases: [
+                "\(.applicationName) morning summary",
                 "\(.applicationName) sabah özeti",
-                "\(.applicationName) özetini göster",
+                "Show \(.applicationName) summary",
             ],
-            shortTitle: "Sabah Özeti",
+            shortTitle: "Morning Summary",
             systemImageName: "sun.max.fill"
         )
     }

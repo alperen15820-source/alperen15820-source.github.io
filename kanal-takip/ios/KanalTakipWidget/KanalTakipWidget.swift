@@ -43,7 +43,7 @@ struct SummaryWidget: Widget {
                 .containerBackground(Theme.bg, for: .widget)
         }
         .configurationDisplayName("Kanal Takip")
-        .description("Kanallarının son 24 saati.")
+        .description(L("Kanallarının son 24 saati.", "Your channels over the last 24 hours."))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular, .accessoryInline, .accessoryCircular])
     }
 }
@@ -53,21 +53,21 @@ struct SummaryWidgetView: View {
     let entry: SummaryEntry
 
     var body: some View {
-        if let s = entry.summary {
+        if let s = entry.summary, !s.channels.isEmpty {
             switch family {
             case .accessoryInline:
-                Text("\(Fmt.signed(s.totalSubsDelta)) abone · \(Fmt.signed(s.totalViewsDelta)) izl.")
+                Text(L("\(Fmt.signed(s.totalSubsDelta)) abone · \(Fmt.signed(s.totalViewsDelta)) izl.", "\(Fmt.signed(s.totalSubsDelta)) subs · \(Fmt.signed(s.totalViewsDelta)) views"))
             case .accessoryCircular:
                 VStack(spacing: 0) {
                     Text(Fmt.signed(s.totalSubsDelta)).font(.system(size: 15, weight: .heavy).monospacedDigit()).minimumScaleFactor(0.5)
-                    Text("ABONE").font(.system(size: 8, weight: .bold))
+                    Text(L("ABONE", "SUBS")).font(.system(size: 8, weight: .bold))
                 }
                 .widgetAccentable()
             case .accessoryRectangular:
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("KANAL TAKİP · 24S").font(.system(size: 10, weight: .bold)).widgetAccentable()
-                    Text("\(Fmt.signed(s.totalSubsDelta)) abone").font(.system(size: 15, weight: .heavy).monospacedDigit())
-                    Text("\(Fmt.signed(s.totalViewsDelta)) izlenme").font(.system(size: 12, weight: .semibold).monospacedDigit())
+                    Text(L("KANAL TAKİP · 24S", "KANAL TAKİP · 24H")).font(.system(size: 10, weight: .bold)).widgetAccentable()
+                    Text(L("\(Fmt.signed(s.totalSubsDelta)) abone", "\(Fmt.signed(s.totalSubsDelta)) subs")).font(.system(size: 15, weight: .heavy).monospacedDigit())
+                    Text(L("\(Fmt.signed(s.totalViewsDelta)) izlenme", "\(Fmt.signed(s.totalViewsDelta)) views")).font(.system(size: 12, weight: .semibold).monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             case .systemSmall:
@@ -78,7 +78,7 @@ struct SummaryWidgetView: View {
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 Text("KANAL TAKİP").font(.system(size: 10, weight: .heavy)).tracking(1).foregroundStyle(Theme.muted)
-                Text("Uygulamayı açıp sunucuya bağlan.").font(.caption).foregroundStyle(Theme.text)
+                Text(L("Kanal eklemek için uygulamayı aç.", "Open the app to add channels.")).font(.caption).foregroundStyle(Theme.text)
             }
         }
     }
@@ -89,17 +89,17 @@ private struct SmallView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("TOPLAM ABONE").font(.system(size: 9, weight: .heavy)).tracking(1).foregroundStyle(Theme.muted)
+            Text(L("TOPLAM ABONE", "TOTAL SUBSCRIBERS")).font(.system(size: 9, weight: .heavy)).tracking(1).foregroundStyle(Theme.muted)
             Text(Fmt.compact(summary.totalSubs))
                 .font(.system(size: 34, weight: .heavy).monospacedDigit()).foregroundStyle(Theme.text)
                 .minimumScaleFactor(0.5).lineLimit(1)
             Rectangle().fill(Theme.accent).frame(width: 24, height: 3)
             Spacer(minLength: 0)
-            Text("\(Fmt.signed(summary.totalSubsDelta)) abone").font(.system(size: 13, weight: .bold).monospacedDigit())
+            Text(L("\(Fmt.signed(summary.totalSubsDelta)) abone", "\(Fmt.signed(summary.totalSubsDelta)) subs")).font(.system(size: 13, weight: .bold).monospacedDigit())
                 .foregroundStyle(Theme.trend(summary.totalSubsDelta))
-            Text("\(Fmt.signed(summary.totalViewsDelta)) izl.").font(.system(size: 13, weight: .bold).monospacedDigit())
+            Text(L("\(Fmt.signed(summary.totalViewsDelta)) izl.", "\(Fmt.signed(summary.totalViewsDelta)) views")).font(.system(size: 13, weight: .bold).monospacedDigit())
                 .foregroundStyle(Theme.trend(summary.totalViewsDelta))
-            Text("son 24 saat").font(.system(size: 9, weight: .semibold)).foregroundStyle(Theme.muted)
+            Text(L("son 24 saat", "last 24 hours")).font(.system(size: 9, weight: .semibold)).foregroundStyle(Theme.muted)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -112,9 +112,9 @@ private struct ListView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
-                Text("KANAL TAKİP · 24S").font(.system(size: 9, weight: .heavy)).tracking(1).foregroundStyle(Theme.muted)
+                Text(L("KANAL TAKİP · 24S", "KANAL TAKİP · 24H")).font(.system(size: 9, weight: .heavy)).tracking(1).foregroundStyle(Theme.muted)
                 Spacer()
-                Text("\(Fmt.signed(summary.totalSubsDelta)) abone").font(.system(size: 11, weight: .heavy).monospacedDigit())
+                Text(L("\(Fmt.signed(summary.totalSubsDelta)) abone", "\(Fmt.signed(summary.totalSubsDelta)) subs")).font(.system(size: 11, weight: .heavy).monospacedDigit())
                     .foregroundStyle(Theme.trend(summary.totalSubsDelta))
             }
             ForEach(summary.channels.prefix(limit)) { c in

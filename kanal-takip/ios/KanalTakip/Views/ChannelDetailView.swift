@@ -20,7 +20,7 @@ struct ChannelDetailView: View {
             let events = (model.state?.events ?? []).filter { $0.channelId == c.id }.prefix(10)
             if !events.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Olaylar").label().padding(.bottom, 6)
+                    Text(L("Olaylar", "Activity")).label().padding(.bottom, 6)
                     ForEach(Array(events)) { EventRow(event: $0) }
                 }
                 .panel()
@@ -52,15 +52,15 @@ private struct Header: View {
                         .background(Theme.surface2)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
-                .accessibilityLabel("YouTube'da aç")
+                .accessibilityLabel(L("YouTube'da aç", "Open in YouTube"))
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.number(channel.subs))
                     .font(.system(size: 60, weight: .heavy).monospacedDigit())
                     .foregroundStyle(Theme.text).lineLimit(1).minimumScaleFactor(0.5)
                 HStack(spacing: 6) {
-                    Text("ABONE").label()
-                    Text("\(Fmt.signed(d24)) son 24 saat").font(.caption.weight(.bold).monospacedDigit()).foregroundStyle(Theme.trend(d24))
+                    Text(L("ABONE", "SUBSCRIBERS")).label()
+                    Text(L("\(Fmt.signed(d24)) son 24 saat", "\(Fmt.signed(d24)) last 24h")).font(.caption.weight(.bold).monospacedDigit()).foregroundStyle(Theme.trend(d24))
                 }
             }
             if let subs = channel.subs, let goal = config?.nextMilestone(after: subs) {
@@ -84,14 +84,14 @@ private struct GoalBlock: View {
         }()
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(next == 1000 ? "Hedef · 1.000 · YPP" : "Hedef · \(Fmt.number(next))").label()
+                Text(next == 1000 ? L("Hedef · 1.000 · YPP", "Goal · 1,000 · YPP") : L("Hedef · \(Fmt.number(next))", "Goal · \(Fmt.number(next))")).label()
                 Spacer()
-                Text("\(Fmt.number(next - subs)) kaldı").font(.caption.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
+                Text(L("\(Fmt.number(next - subs)) kaldı", "\(Fmt.number(next - subs)) to go")).font(.caption.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
             }
             GoalBar(subs: subs, prev: prev, next: next, height: 6)
             if let perDay {
                 let days = Int((Double(next - subs) / perDay).rounded(.up))
-                Text("Bu hızla ~\(days) gün").font(.caption).foregroundStyle(Theme.muted)
+                Text(L("Bu hızla ~\(days) gün", "~\(days) days at this pace")).font(.caption).foregroundStyle(Theme.muted)
             }
         }
     }
@@ -109,12 +109,12 @@ private struct StatsGrid: View {
         }()
         Grid(horizontalSpacing: 12, verticalSpacing: 12) {
             GridRow {
-                Stat(title: "Toplam izlenme", value: Fmt.compact(channel.views)).panel(padding: 14)
-                Stat(title: "İzlenme · 24s", value: Fmt.signed(v24), color: Theme.trend(v24)).panel(padding: 14)
+                Stat(title: L("Toplam izlenme", "Total views"), value: Fmt.compact(channel.views)).panel(padding: 14)
+                Stat(title: L("İzlenme · 24s", "Views · 24h"), value: Fmt.signed(v24), color: Theme.trend(v24)).panel(padding: 14)
             }
             GridRow {
-                Stat(title: "İzlenme / saat", value: perHour.map { Fmt.compact($0) } ?? "—").panel(padding: 14)
-                Stat(title: "Abone · 7g", value: Fmt.signed(s7), color: Theme.trend(s7)).panel(padding: 14)
+                Stat(title: L("İzlenme / saat", "Views / hour"), value: perHour.map { Fmt.compact($0) } ?? "—").panel(padding: 14)
+                Stat(title: L("Abone · 7g", "Subs · 7d"), value: Fmt.signed(s7), color: Theme.trend(s7)).panel(padding: 14)
             }
         }
     }
@@ -146,25 +146,25 @@ private struct ChartPanel: View {
 
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Segmented(options: [("Abone", Metric.subs), ("İzlenme", Metric.views)], selection: metric, onSelect: setMetric)
+                Segmented(options: [(L("Abone", "Subs"), Metric.subs), (L("İzlenme", "Views"), Metric.views)], selection: metric, onSelect: setMetric)
                 Spacer()
-                Segmented(options: [("24S", 1.0), ("7G", 7.0), ("30G", 30.0), ("TÜMÜ", 400.0)], selection: rangeDays, onSelect: setRange)
+                Segmented(options: [(L("24S", "24H"), 1.0), (L("7G", "7D"), 7.0), (L("30G", "30D"), 30.0)], selection: rangeDays, onSelect: setRange)
             }
             HStack {
                 if let sel {
                     Text(Fmt.number(Int(sel.value))).font(.system(size: 15, weight: .bold).monospacedDigit()).foregroundStyle(Theme.text)
-                    Text(sel.date.formatted(.dateTime.day().month(.abbreviated).hour().minute().locale(Locale(identifier: "tr_TR"))))
+                    Text(sel.date.formatted(.dateTime.day().month(.abbreviated).hour().minute().locale(Lang.locale)))
                         .font(.caption).foregroundStyle(Theme.muted)
                 } else if let first = points.first, let last = points.last {
                     let d = Int(last.value - first.value)
                     Text(Fmt.signed(d)).font(.system(size: 15, weight: .bold).monospacedDigit()).foregroundStyle(Theme.trend(d))
-                    Text("bu aralıkta").font(.caption).foregroundStyle(Theme.muted)
+                    Text(L("bu aralıkta", "in this range")).font(.caption).foregroundStyle(Theme.muted)
                 }
             }
             .frame(height: 18)
 
             if points.count < 2 {
-                Text("Grafik için veri birikiyor. Her 10 dakikada bir yeni nokta ekleniyor.")
+                Text(L("Grafik için veri birikiyor. Her 10 dakikada bir yeni nokta ekleniyor.", "Collecting data for the chart. A new point is added every 10 minutes."))
                     .font(.footnote).foregroundStyle(Theme.muted)
                     .frame(maxWidth: .infinity, minHeight: 160)
             } else {
@@ -231,13 +231,13 @@ private struct VideosPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Son videolar").label()
+                Text(L("Son videolar", "Latest videos")).label()
                 Spacer()
-                Text("\(Fmt.number(channel.videoCount)) video").font(.caption2).foregroundStyle(Theme.muted)
+                Text(L("\(Fmt.number(channel.videoCount)) video", "\(Fmt.number(channel.videoCount)) videos")).font(.caption2).foregroundStyle(Theme.muted)
             }
             let videos = channel.latestVideos
             if videos.isEmpty {
-                Text("Henüz video yok.").font(.footnote).foregroundStyle(Theme.muted)
+                Text(L("Henüz video yok.", "No videos yet.")).font(.footnote).foregroundStyle(Theme.muted)
             }
             ForEach(videos) { v in
                 Button { if let u = v.watchURL { openURL(u) } } label: {
@@ -274,14 +274,14 @@ private struct VideoRow: View {
                 Text(video.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.text)
                     .lineLimit(2).multilineTextAlignment(.leading)
                 HStack(spacing: 8) {
-                    Text("\(Fmt.compact(video.views)) izl.")
-                    if let r = video.viewsPerHour { Text("\(Fmt.compact(Int(r)))/sa") }
-                    if let d24, d24 != 0 { Text("\(Fmt.signed(d24)) 24s").foregroundStyle(Theme.trend(d24)) }
+                    Text(L("\(Fmt.compact(video.views)) izl.", "\(Fmt.compact(video.views)) views"))
+                    if let r = video.viewsPerHour { Text(L("\(Fmt.compact(Int(r)))/sa", "\(Fmt.compact(Int(r)))/h")) }
+                    if let d24, d24 != 0 { Text(L("\(Fmt.signed(d24)) 24s", "\(Fmt.signed(d24)) 24h")).foregroundStyle(Theme.trend(d24)) }
                 }
                 .font(.caption.monospacedDigit()).foregroundStyle(Theme.muted)
                 HStack(spacing: 6) {
-                    if spiking { Tag(text: "Sıçrama", color: Theme.text) }
-                    if video.live == "live" { Tag(text: "Canlı", color: Theme.text) }
+                    if spiking { Tag(text: L("Sıçrama", "Spike"), color: Theme.text) }
+                    if video.live == "live" { Tag(text: L("Canlı", "Live"), color: Theme.text) }
                     Text(Fmt.ago(video.publishedDate)).font(.caption2).foregroundStyle(Theme.muted)
                 }
             }
@@ -296,7 +296,7 @@ struct Tag: View {
     let color: Color
 
     var body: some View {
-        Text(text.uppercased()).font(.system(size: 9, weight: .heavy)).tracking(0.8)
+        Text(text.uppercased(with: Lang.locale)).font(.system(size: 9, weight: .heavy)).tracking(0.8)
             .padding(.horizontal, 5).padding(.vertical, 2)
             .foregroundStyle(Theme.bg).background(color)
     }

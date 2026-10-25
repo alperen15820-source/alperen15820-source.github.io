@@ -58,38 +58,41 @@ enum DemoData {
         }
 
         let channels = [
-            channel("otomasyon", "Otomasyon Kanalı", history(subs: 640, views: 41_000, subsPerDay: 12, viewsPerDay: 900, burst: true), [
-                video("d1", "Yapay zekâ ile 1 günde 10 Shorts ürettim", ageHours: 20, views: 6_400, perHour: 260, spiking: true),
-                video("d2", "Faceless kanal açmak: sıfırdan rehber", ageHours: 96, views: 3_100, perHour: 22),
-                video("d3", "En çok izlenen 5 otomasyon aracı", ageHours: 200, views: 1_800, perHour: 6),
+            channel("otomasyon", L("Otomasyon Kanalı", "Automation Lab"), history(subs: 640, views: 41_000, subsPerDay: 12, viewsPerDay: 900, burst: true), [
+                video("d1", L("Yapay zekâ ile 1 günde 10 Shorts ürettim", "I made 10 Shorts in one day with AI"), ageHours: 20, views: 6_400, perHour: 260, spiking: true),
+                video("d2", L("Faceless kanal açmak: sıfırdan rehber", "Starting a faceless channel from zero"), ageHours: 96, views: 3_100, perHour: 22),
+                video("d3", L("En çok izlenen 5 otomasyon aracı", "Top 5 automation tools"), ageHours: 200, views: 1_800, perHour: 6),
             ]),
-            channel("bilgikutusu", "Bilgi Kutusu", history(subs: 11_800, views: 2_100_000, subsPerDay: 25, viewsPerDay: 6_000), [
-                video("d4", "Günün en ilginç 10 bilgisi", ageHours: 5, views: 8_200, perHour: 1_500),
-                video("d5", "Bunları biliyor muydun? #shorts", ageHours: 60, views: 41_000, perHour: 300),
+            channel("bilgikutusu", L("Bilgi Kutusu", "Fact Box"), history(subs: 11_800, views: 2_100_000, subsPerDay: 25, viewsPerDay: 6_000), [
+                video("d4", L("Günün en ilginç 10 bilgisi", "10 wild facts of the day"), ageHours: 5, views: 8_200, perHour: 1_500),
+                video("d5", L("Bunları biliyor muydun? #shorts", "Did you know this? #shorts"), ageHours: 60, views: 41_000, perHour: 300),
             ]),
             channel("shortslab", "Shorts Lab", history(subs: 1_100, views: 280_000, subsPerDay: 4, viewsPerDay: 2_500), [
-                video("d6", "30 saniyede Excel hilesi", ageHours: 30, views: 12_000, perHour: 210),
+                video("d6", L("30 saniyede Excel hilesi", "Excel trick in 30 seconds"), ageHours: 30, views: 12_000, perHour: 210),
             ]),
-            channel("gecehikaye", "Gece Hikâyeleri", history(subs: 420, views: 18_000, subsPerDay: 3, viewsPerDay: 250), [
-                video("d7", "Terk edilmiş köyün sırrı", ageHours: 70, views: 2_400, perHour: 18),
+            channel("gecehikaye", L("Gece Hikâyeleri", "Night Stories"), history(subs: 420, views: 18_000, subsPerDay: 3, viewsPerDay: 250), [
+                video("d7", L("Terk edilmiş köyün sırrı", "The secret of the abandoned village"), ageHours: 70, views: 2_400, perHour: 18),
             ]),
-            channel("teknohaber", "Tekno Haber", history(subs: 3_300, views: 640_000, subsPerDay: 9, viewsPerDay: 4_100), [
-                video("d8", "Yeni iPhone'un gizli özellikleri", ageHours: 12, views: 9_800, perHour: 420),
+            channel("teknohaber", L("Tekno Haber", "Tech Daily"), history(subs: 3_300, views: 640_000, subsPerDay: 9, viewsPerDay: 4_100), [
+                video("d8", L("Yeni iPhone'un gizli özellikleri", "Hidden features of the new iPhone"), ageHours: 12, views: 9_800, perHour: 420),
             ]),
         ]
 
+        let a = channels[0].title, b = channels[1].title, e = channels[4].title
+        let v1 = channels[0].latestVideos[0].title, v4 = channels[1].latestVideos[0].title
         let events = [
-            AppEvent(id: "e1", t: now - 4 * 60_000, type: "milestone", title: "🏆 1000 ABONE — Otomasyon Kanalı",
-                     body: "Tebrikler! 1000 abone barajı geçildi. Para kazanma (YPP) için ilk büyük şart tamam — sırada 4000 saat izlenme ya da 10M Shorts izlenmesi var. 🚀",
-                     channelId: "otomasyon", channel: "Otomasyon Kanalı", milestone: 1000),
-            AppEvent(id: "e2", t: now - 20 * 60_000, type: "spike_video", title: "🔥 Sıçrama — Yapay zekâ ile 1 günde 10 Shorts ürettim",
-                     body: "Saatte ~2.080 izlenme (normalin 8,0 katı). Toplam 6.400 · Otomasyon Kanalı", channelId: "otomasyon", videoId: "d1"),
-            AppEvent(id: "e3", t: now - 5 * hour, type: "new_video", title: "🎬 Yeni video — Bilgi Kutusu",
-                     body: "Günün en ilginç 10 bilgisi", channelId: "bilgikutusu", videoId: "d4"),
-            AppEvent(id: "e4", t: now - 7 * hour, type: "subs_jump", title: "👥 Abone yağıyor — Tekno Haber",
-                     body: "Son bir saatte +14 abone. Şu an 3.312.", channelId: "teknohaber"),
-            AppEvent(id: "e5", t: now - 22 * hour, type: "morning", title: "☀️ Günaydın — dün +53 abone, +13,6B izlenme",
-                     body: "En iyi: Günün en ilginç 10 bilgisi (+8.200)"),
+            AppEvent(id: "e1", t: now - 4 * 60_000, type: "milestone", title: L("🏆 1000 ABONE — \(a)", "🏆 1,000 SUBSCRIBERS — \(a)"),
+                     body: L("Tebrikler! 1000 abone barajı geçildi. Para kazanma (YPP) için ilk büyük şart tamam — sırada 4000 saat izlenme ya da 10M Shorts izlenmesi var. 🚀",
+                             "Congrats! You crossed 1,000 subscribers — the first big step toward the YouTube Partner Program. Next up: 4,000 watch hours or 10M Shorts views. 🚀"),
+                     channelId: "otomasyon", channel: a, milestone: 1000),
+            AppEvent(id: "e2", t: now - 20 * 60_000, type: "spike_video", title: L("🔥 Sıçrama — \(v1)", "🔥 Spike — \(v1)"),
+                     body: L("Saatte ~2.080 izlenme (normalin 8,0 katı). Toplam 6.400 · \(a)", "~2,080 views/hour (8.0× normal). Total 6,400 · \(a)"), channelId: "otomasyon", videoId: "d1"),
+            AppEvent(id: "e3", t: now - 5 * hour, type: "new_video", title: L("🎬 Yeni video — \(b)", "🎬 New video — \(b)"),
+                     body: v4, channelId: "bilgikutusu", videoId: "d4"),
+            AppEvent(id: "e4", t: now - 7 * hour, type: "subs_jump", title: L("👥 Abone yağıyor — \(e)", "👥 Subscribers pouring in — \(e)"),
+                     body: L("Son bir saatte +14 abone. Şu an 3.312.", "+14 subscribers in the last hour. Now at 3,312."), channelId: "teknohaber"),
+            AppEvent(id: "e5", t: now - 22 * hour, type: "morning", title: L("☀️ Günaydın — dün +53 abone, +13,6B izlenme", "☀️ Good morning — +53 subscribers, +13.6K views yesterday"),
+                     body: L("En iyi: \(v4) (+8.200)", "Top: \(v4) (+8,200)")),
         ]
 
         let config = AppConfig(

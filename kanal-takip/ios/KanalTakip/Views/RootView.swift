@@ -7,18 +7,18 @@ struct RootView: View {
     var body: some View {
         @Bindable var model = model
         Group {
-            if model.server == nil {
-                SetupView()
+            if !model.onboarded {
+                OnboardingView()
             } else {
                 TabView(selection: $tab) {
                     HomeView()
-                        .tabItem { Label("Kanallar", systemImage: "square.grid.2x2.fill") }
+                        .tabItem { Label(L("Kanallar", "Channels"), systemImage: "square.grid.2x2.fill") }
                         .tag(0)
                     EventsView()
-                        .tabItem { Label("Olaylar", systemImage: "bolt.fill") }
+                        .tabItem { Label(L("Olaylar", "Activity"), systemImage: "bolt.fill") }
                         .tag(1)
                     SettingsView()
-                        .tabItem { Label("Ayarlar", systemImage: "slider.horizontal.3") }
+                        .tabItem { Label(L("Ayarlar", "Settings"), systemImage: "slider.horizontal.3") }
                         .tag(2)
                 }
             }
@@ -30,7 +30,11 @@ struct RootView: View {
         .onChange(of: model.openChannelId) { _, id in
             if id != nil { tab = 0 }
         }
-        .task { await model.refresh(force: true) }
+        .task(id: model.onboarded) {
+            guard model.onboarded else { return }
+            await model.checkNotificationStatus()
+            await model.refresh(force: true)
+        }
     }
 }
 
@@ -46,7 +50,7 @@ struct Screen<Content: View>: View {
             VStack(alignment: .leading, spacing: 12) {
                 if large {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(title.uppercased(with: Locale(identifier: "tr_TR")))
+                        Text(title.uppercased(with: Lang.locale))
                             .font(.system(size: 30, weight: .black)).tracking(0.5)
                             .foregroundStyle(Theme.text)
                         Rectangle().fill(Theme.accent).frame(width: 32, height: 3)

@@ -44,36 +44,31 @@ extension View {
 }
 
 enum Fmt {
-    private static let full: NumberFormatter = {
+    private static func formatter(digits: Int) -> NumberFormatter {
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: "tr_TR")
-        f.maximumFractionDigits = 0
+        f.locale = Lang.locale
+        f.maximumFractionDigits = digits
         return f
-    }()
-
-    private static let oneDecimal: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.locale = Locale(identifier: "tr_TR")
-        f.maximumFractionDigits = 1
-        return f
-    }()
+    }
+    private static let full = formatter(digits: 0)
+    private static let oneDecimal = formatter(digits: 1)
 
     static func number(_ n: Int?) -> String {
         guard let n else { return "—" }
         return full.string(from: NSNumber(value: n)) ?? "\(n)"
     }
 
-    /// 9.999'a kadar tam, sonra 12,3B / 1,2Mn
+    /// 9.999'a kadar tam, sonra 12,3B / 1,2Mn (TR) — 12.3K / 1.2M (EN)
     static func compact(_ n: Int?) -> String {
         guard let n else { return "—" }
         let a = abs(Double(n))
         let sign = n < 0 ? "−" : ""
+        let (k, m, b) = Lang.isTurkish ? ("B", "Mn", "Mr") : ("K", "M", "B")
         if a < 10_000 { return sign + number(abs(n)) }
-        if a < 1_000_000 { return sign + (oneDecimal.string(from: NSNumber(value: a / 1000)) ?? "") + "B" }
-        if a < 1_000_000_000 { return sign + (oneDecimal.string(from: NSNumber(value: a / 1_000_000)) ?? "") + "Mn" }
-        return sign + (oneDecimal.string(from: NSNumber(value: a / 1_000_000_000)) ?? "") + "Mr"
+        if a < 1_000_000 { return sign + (oneDecimal.string(from: NSNumber(value: a / 1000)) ?? "") + k }
+        if a < 1_000_000_000 { return sign + (oneDecimal.string(from: NSNumber(value: a / 1_000_000)) ?? "") + m }
+        return sign + (oneDecimal.string(from: NSNumber(value: a / 1_000_000_000)) ?? "") + b
     }
 
     static func signed(_ n: Int) -> String {
@@ -83,10 +78,10 @@ enum Fmt {
     static func ago(_ date: Date?) -> String {
         guard let date else { return "—" }
         let s = max(0, Date().timeIntervalSince(date))
-        if s < 60 { return "az önce" }
-        if s < 3600 { return "\(Int(s / 60)) dk önce" }
-        if s < 86400 { return "\(Int(s / 3600)) sa önce" }
-        return "\(Int(s / 86400)) gün önce"
+        if s < 60 { return L("az önce", "just now") }
+        if s < 3600 { return L("\(Int(s / 60)) dk önce", "\(Int(s / 60)) min ago") }
+        if s < 86400 { return L("\(Int(s / 3600)) sa önce", "\(Int(s / 3600)) h ago") }
+        return L("\(Int(s / 86400)) gün önce", "\(Int(s / 86400)) d ago")
     }
 
     static func duration(_ sec: Int?) -> String? {

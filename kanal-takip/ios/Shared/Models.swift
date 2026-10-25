@@ -11,6 +11,9 @@ struct AppState: Codable {
     var config: AppConfig?
     var devices: Int?
     var push: Bool?
+    var limits: Limits?
+
+    struct Limits: Codable { var maxChannels: Int }
 
     var orderedChannels: [Channel] {
         let ids = order ?? Array(channels.keys).sorted()
@@ -125,6 +128,13 @@ struct AppConfig: Codable, Hashable {
         try c.encode(trackLatestVideos, forKey: .trackLatestVideos)
         if let h = morningFallbackHour { try c.encode(h, forKey: .morningFallbackHour) } else { try c.encodeNil(forKey: .morningFallbackHour) }
     }
+
+    static let defaults = AppConfig(
+        channels: [],
+        milestones: [100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+        alerts: Alerts(spikeMultiplier: 3, videoMinViewsPerHour: 50, channelMinViewsPerHour: 100, subsPerHour: 10, newVideo: true, cooldownHours: 3),
+        timezone: TimeZone.current.identifier, trackLatestVideos: 10, morningFallbackHour: nil
+    )
 
     func nextMilestone(after subs: Int) -> (prev: Int, next: Int)? {
         guard let next = milestones.first(where: { $0 > subs }) else { return nil }

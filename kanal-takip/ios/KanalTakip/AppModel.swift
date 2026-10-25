@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import UIKit
+import UserNotifications
 import WidgetKit
 
 @MainActor
@@ -8,20 +9,24 @@ import WidgetKit
 final class AppModel {
     static let shared = AppModel()
 
-    var server: ServerConfig? = SharedSettings.server
     var state: AppState?
     var loading = false
     var errorMessage: String?
     var celebration: AppEvent?
     var openChannelId: String?
+    var onboarded: Bool {
+        didSet { UserDefaults.standard.set(onboarded, forKey: "onboarded") }
+    }
+    var notificationsDenied = false
 
     private var lastLoad = Date.distantPast
     private let cacheFile = SharedSettings.cacheDirectory.appendingPathComponent("state.json")
     private let seenKey = "celebratedUntil"
 
     init() {
+        onboarded = UserDefaults.standard.bool(forKey: "onboarded")
         if DemoData.isEnabled {
-            server = ServerConfig(url: URL(string: "https://demo.invalid")!, secret: "demo")
+            onboarded = !ProcessInfo.processInfo.arguments.contains("-onboarding")
             state = DemoData.state()
             if ProcessInfo.processInfo.arguments.contains("-celebrate") {
                 celebration = state?.events?.first { $0.type == "milestone" }
@@ -36,53 +41,62 @@ final class AppModel {
 
     var config: AppConfig? { state?.config }
     var cooldownHours: Double { state?.config?.alerts.cooldownHours ?? 3 }
+    var maxChannels: Int { state?.limits?.maxChannels ?? 5 }
 
-    // MARK: Sunucu bağlantısı
+    // MARK: Hesap
 
-    func connect(url: URL, secret: String) async throws {
-        let candidate = ServerConfig(url: url, secret: secret)
-        _ = try await APIClient(server: candidate).state()
-        SharedSettings.server = candidate
-        server = candidate
-        await registerStoredPushToken()
-        await refresh(force: true)
+    /// İlk açılışta sunucudan anonim bir hesap alır.
+    private func client() async throws -> APIClient {
+        guard let base = SharedSettings.baseURL else { throw APIError.notConfigured }
+        if let token = SharedSettings.token { return APIClient(baseURL: base, token: token) }
+        let token = try await APIClient.register(baseURL: base)
+        SharedSettings.token = token
+        let api = APIClient(baseURL: base, token: token)
+        await registerStoredPushToken(api)
+        return api
     }
 
-    func disconnect() {
-        SharedSettings.server = nil
-        server = nil
-        state = nil
-        try? FileManager.default.removeItem(at: cacheFile)
-    }
-
-    /// kanaltakip://kurulum?url=...&secret=...
-    func handle(url: URL) {
-        guard url.scheme == "kanaltakip",
-              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
-              let raw = items.first(where: { $0.name == "url" })?.value, let serverURL = URL(string: raw),
-              let secret = items.first(where: { $0.name == "secret" })?.value else { return }
-        Task {
-            do { try await connect(url: serverURL, secret: secret) } catch { errorMessage = error.localizedDescription }
+    /// Sunucu hesabı tanımıyorsa (silinmiş) yenisini oluştur.
+    private func withClient<T>(_ op: (APIClient) async throws -> T) async throws -> T {
+        do {
+            return try await op(try await client())
+        } catch APIError.unauthorized {
+            SharedSettings.token = nil
+            return try await op(try await client())
         }
+    }
+
+    func deleteAccount() async throws {
+        if !DemoData.isEnabled { try await withClient { try await $0.deleteAccount() } }
+        SharedSettings.token = nil
+        SharedSettings.cachedSummary = nil
+        try? FileManager.default.removeItem(at: cacheFile)
+        UserDefaults.standard.removeObject(forKey: seenKey)
+        UserDefaults.standard.removeObject(forKey: "localeSynced")
+        state = nil
+        onboarded = false
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // MARK: Veri
 
     func refresh(force: Bool = false) async {
-        guard let server, !loading, !DemoData.isEnabled else { return }
+        guard !loading, !DemoData.isEnabled else { return }
         if !force && Date().timeIntervalSince(lastLoad) < 20 { return }
         loading = true
         defer { loading = false }
         do {
-            let api = APIClient(server: server)
-            let (newState, data) = try await api.state()
+            let (newState, data) = try await withClient { try await $0.state() }
             state = newState
             lastLoad = Date()
             errorMessage = nil
             try? data.write(to: cacheFile, options: .atomic)
-            if let summary = try? await api.summary() {
-                SharedSettings.cachedSummary = summary
-                WidgetCenter.shared.reloadAllTimelines()
+            if let api = try? await client() {
+                if let summary = try? await api.summary() {
+                    SharedSettings.cachedSummary = summary
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
+                await syncLocaleIfNeeded(api)
             }
             checkCelebration()
         } catch {
@@ -90,24 +104,29 @@ final class AppModel {
         }
     }
 
+    /// Telefonun dili veya saat dilimi değiştiyse sunucuya bildir (bildirim dili için).
+    private func syncLocaleIfNeeded(_ api: APIClient) async {
+        let current = "\(Lang.code)|\(TimeZone.current.identifier)"
+        guard UserDefaults.standard.string(forKey: "localeSynced") != current else { return }
+        if (try? await api.syncLocale()) != nil { UserDefaults.standard.set(current, forKey: "localeSynced") }
+    }
+
     func saveConfig(_ config: AppConfig) async throws {
-        guard let server else { return }
-        let saved = try await APIClient(server: server).saveConfig(config)
+        if DemoData.isEnabled { state?.config = config; return }
+        let saved = try await withClient { try await $0.saveConfig(config) }
         state?.config = saved
-        // Kanal listesi değiştiyse sunucu hemen bir tur çalıştırır; sonucu biraz sonra çek.
-        try? await Task.sleep(for: .seconds(4))
+        // Yeni eklenen kanallar sunucuda hemen yoklanır; sonucu biraz sonra çek.
+        try? await Task.sleep(for: .seconds(3))
         await refresh(force: true)
     }
 
-    func runNow() async throws {
-        guard let server else { return }
-        try await APIClient(server: server).runNow()
+    func refreshNow() async throws {
+        try await withClient { try await $0.refreshNow() }
         await refresh(force: true)
     }
 
     func sendTest() async throws {
-        guard let server else { return }
-        try await APIClient(server: server).sendTest()
+        try await withClient { try await $0.sendTest() }
     }
 
     // MARK: Kutlama
@@ -124,24 +143,33 @@ final class AppModel {
         celebration = nil
     }
 
-    // MARK: Push
+    // MARK: Bildirimler
+
+    func requestNotifications() async {
+        let center = UNUserNotificationCenter.current()
+        let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        notificationsDenied = !granted
+        if granted { UIApplication.shared.registerForRemoteNotifications() }
+    }
+
+    func checkNotificationStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        notificationsDenied = settings.authorizationStatus == .denied
+        if settings.authorizationStatus == .authorized { UIApplication.shared.registerForRemoteNotifications() }
+    }
 
     func didReceivePushToken(_ token: String) {
         SharedSettings.defaults.set(token, forKey: "pushToken")
-        Task { await registerStoredPushToken() }
+        Task { if let api = try? await client() { await registerStoredPushToken(api) } }
     }
 
-    func registerStoredPushToken() async {
-        guard let server, let token = SharedSettings.defaults.string(forKey: "pushToken") else { return }
+    private func registerStoredPushToken(_ api: APIClient) async {
+        guard let token = SharedSettings.defaults.string(forKey: "pushToken") else { return }
         #if DEBUG
         let environment = "sandbox"
         #else
         let environment = "production"
         #endif
-        do {
-            try await APIClient(server: server).registerDevice(token: token, environment: environment, name: UIDevice.current.name)
-        } catch {
-            errorMessage = "Bildirim kaydı başarısız: \(error.localizedDescription)"
-        }
+        try? await api.registerDevice(token: token, environment: environment)
     }
 }

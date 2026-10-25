@@ -13,9 +13,12 @@ struct KanalTakipApp: App {
                 .environment(model)
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
-                .onOpenURL { model.handle(url: $0) }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { Task { await model.refresh() } }
+                    guard phase == .active, model.onboarded else { return }
+                    Task {
+                        await model.checkNotificationStatus()
+                        await model.refresh()
+                    }
                 }
         }
     }
@@ -23,13 +26,7 @@ struct KanalTakipApp: App {
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        let center = UNUserNotificationCenter.current()
-        center.delegate = self
-        if DemoData.isEnabled { return true }
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-            guard granted else { return }
-            DispatchQueue.main.async { application.registerForRemoteNotifications() }
-        }
+        UNUserNotificationCenter.current().delegate = self
         return true
     }
 
@@ -39,7 +36,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        Task { @MainActor in AppModel.shared.errorMessage = "Push kaydı başarısız: \(error.localizedDescription)" }
+        print("Push kaydı başarısız: \(error.localizedDescription)")
     }
 
     // Uygulama açıkken de bildirimi göster ve veriyi yenile.

@@ -19,7 +19,7 @@ struct CelebrationView: View {
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.4).lineLimit(1)
                     .scaleEffect(appeared ? 1 : 0.6)
-                Text("ABONE").font(.system(size: 16, weight: .heavy)).tracking(6).foregroundStyle(Theme.gold)
+                Text(L("ABONE", "SUBSCRIBERS")).font(.system(size: 16, weight: .heavy)).tracking(6).foregroundStyle(Theme.gold)
                 if let ch = event.channel {
                     Text(ch).font(.headline).foregroundStyle(Theme.text)
                 }
@@ -27,7 +27,7 @@ struct CelebrationView: View {
                     .font(.subheadline).foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center).padding(.horizontal, 24)
                 Spacer()
-                PrimaryButton(title: "Devam", style: Theme.accent, action: onClose)
+                PrimaryButton(title: L("Devam", "Continue"), style: Theme.accent, action: onClose)
                     .padding(.horizontal, 24).padding(.bottom, 24)
             }
             .padding()

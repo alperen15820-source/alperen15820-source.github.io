@@ -1,0 +1,36 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Morning Summary": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sabah Özeti"
+          }
+        }
+      }
+    },
+    "Shows the last 24 hours of your YouTube channels as a notification.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YouTube kanallarının son 24 saatini bildirim olarak gösterir."
+          }
+        }
+      }
+    },
+    "Only once per day": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Günde yalnızca bir kez"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

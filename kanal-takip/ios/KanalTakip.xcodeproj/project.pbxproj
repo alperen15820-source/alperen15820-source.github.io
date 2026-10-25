@@ -164,9 +164,10 @@
 				};
 			};
 			buildConfigurationList = 5CC8C2A7D93425821AC2FC22 /* Build configuration list for PBXProject "KanalTakip" */;
-			developmentRegion = tr;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				en,
 				tr,
 				Base,
 			);
@@ -230,6 +231,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				API_BASE_URL = "https://kanal-takip.example.workers.dev";
 				APP_GROUP_ID = "group.$(BUNDLE_ID_PREFIX)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_ID_PREFIX = com.alperen15820.kanaltakip;
@@ -267,6 +269,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				API_BASE_URL = "https://kanal-takip.example.workers.dev";
 				APP_GROUP_ID = "group.$(BUNDLE_ID_PREFIX)";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_ID_PREFIX = com.alperen15820.kanaltakip;

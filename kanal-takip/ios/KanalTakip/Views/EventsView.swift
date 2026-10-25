@@ -5,10 +5,10 @@ struct EventsView: View {
 
     var body: some View {
         NavigationStack {
-            Screen(title: "Olaylar", large: true) {
+            Screen(title: L("Olaylar", "Activity"), large: true) {
                 let events = model.state?.events ?? []
                 if events.isEmpty {
-                    Text("Henüz olay yok. Sıçramalar, yeni videolar ve abone hedefleri burada listelenir.")
+                    Text(L("Henüz olay yok. Sıçramalar, yeni videolar ve abone hedefleri burada listelenir.", "Nothing yet. Spikes, new videos and milestones will show up here."))
                         .font(.subheadline).foregroundStyle(Theme.muted)
                         .panel()
                 } else {
