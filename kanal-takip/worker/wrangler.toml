@@ -2,14 +2,24 @@ name = "kanal-takip"
 main = "src/index.js"
 compatibility_date = "2025-09-01"
 
-# Her 10 dakikada bir kanalları kontrol et
+# Her 10 dakikada bir: hangi kanalların yoklanacağına kota göre sunucu karar verir
 [triggers]
 crons = ["*/10 * * * *"]
 
 # "npm run kurulum" bu id'yi otomatik doldurur
-[[kv_namespaces]]
-binding = "KV"
-id = "KV_ID_BURAYA"
+[[d1_databases]]
+binding = "DB"
+database_name = "kanal-takip"
+database_id = "D1_ID_BURAYA"
+migrations_dir = "migrations"
+
+[vars]
+MAX_CHANNELS_PER_USER = "5"
+# Ücretsiz YouTube kotasıyla (10.000/gün) ~100 kanal 10 dakikada bir yoklanabilir.
+# Google kota artışı onaylanınca YT_DAILY_QUOTA ve bunu yükselt.
+MAX_TOTAL_CHANNELS = "100"
+YT_DAILY_QUOTA = "10000"
+REGISTER_PER_IP_PER_DAY = "10"
 
 [observability]
 enabled = true

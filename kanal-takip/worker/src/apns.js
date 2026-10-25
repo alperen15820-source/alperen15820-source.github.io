@@ -46,11 +46,12 @@ async function sendOne(env, device, payload, opts, host) {
 
 // Tüm cihazlara gönderir. Geçersiz token'ları ayıklar, yanlış ortamda kayıtlı
 // cihazları (Xcode = sandbox, TestFlight/App Store = production) otomatik düzeltir.
-// Dönen değer: cihaz listesi değiştiyse yeni liste, değişmediyse null.
+// Dönen değer: değişiklik varsa { keep, moved }, yoksa null.
 export async function pushAll(env, devices, payload, opts = {}) {
   if (!apnsConfigured(env) || !devices.length) return null;
   let changed = false;
   const keep = [];
+  const moved = [];
   for (const device of devices) {
     const host = device.env === 'production' ? 'production' : 'sandbox';
     let res = await sendOne(env, device, payload, opts, host);
@@ -61,6 +62,7 @@ export async function pushAll(env, devices, payload, opts = {}) {
       reason = res.ok ? null : (await res.json().catch(() => ({}))).reason;
       if (res.ok) {
         device.env = other;
+        moved.push(device);
         changed = true;
       }
     }
@@ -72,5 +74,5 @@ export async function pushAll(env, devices, payload, opts = {}) {
     if (!res.ok) console.warn(`APNs hatası ${res.status}: ${reason}`);
     keep.push(device);
   }
-  return changed ? keep : null;
+  return changed ? { keep, moved } : null;
 }

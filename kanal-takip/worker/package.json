@@ -6,10 +6,9 @@
     "kurulum": "node scripts/setup.mjs",
     "deploy": "wrangler deploy",
     "loglar": "wrangler tail",
-    "test": "node test/sim.mjs"
+    "test": "node --no-warnings test/sim.mjs"
   },
   "devDependencies": {
-    "qrcode-terminal": "^0.12.0",
     "wrangler": "^4.0.0"
   }
 }
