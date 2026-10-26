@@ -76,6 +76,7 @@ final class AppModel {
         state = nil
         onboarded = false
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
     }
 
     // MARK: Veri
@@ -96,6 +97,7 @@ final class AppModel {
                     SharedSettings.cachedSummary = summary
                     WidgetCenter.shared.reloadAllTimelines()
                 }
+                WatchSync.shared.push()
                 await syncLocaleIfNeeded(api)
             }
             checkCelebration()
