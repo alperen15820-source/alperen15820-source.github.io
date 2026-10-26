@@ -5,6 +5,7 @@ YouTube kanallarını takip eden, sıçramalarda ve abone hedeflerinde bildirim 
 - Video sıçraması, izlenme patlaması, abone yağması, yeni video ve abone hedefi bildirimleri (1000 aboneye özel kutlama)
 - Sabah özeti: belli bir saati yok, alarm kapanınca gelir (Kısayollar otomasyonu)
 - Kilit ekranı ve ana ekran widget'ı
+- Apple Watch uygulaması ve kadran komplikasyonları
 - Türkçe + İngilizce, siyah-beyaz tasarım
 - Giriş yok (anonim hesap), uygulama içinden "Verilerimi sil"
 
@@ -38,8 +39,8 @@ Betik sırasıyla şunları yapar:
 ### 2. Uygulama
 
 1. `kanal-takip/ios/KanalTakip.xcodeproj` dosyasını aç.
-2. **Signing & Capabilities** sekmesinde her iki hedefte (*KanalTakip*, *KanalTakipWidgetExtension*) **Team** olarak kendi hesabını seç.
-3. iPhone'u bağla ve ▶︎ Run de.
+2. Team (`TLSF8D3HV5`) projede ayarlı. Xcode → Settings → Accounts bölümünde Apple ID'nin ekli olması yeterli.
+3. iPhone'u bağla ve ▶︎ Run de. Apple Watch uygulaması iPhone uygulamasıyla birlikte gelir (saatte otomatik yüklenmezse: iPhone'daki Watch uygulaması → Kanal Takip → Yükle).
 4. Uygulama açılınca **Başla** de, bildirim iznini ver ve kanallarını ekle.
 
 > Bundle ID başkası tarafından alınmışsa: Build Settings → `BUNDLE_ID_PREFIX` değerini değiştir, sonra `npm run kurulum` komutunu tekrar çalıştırıp aynı Bundle ID'yi gir.
